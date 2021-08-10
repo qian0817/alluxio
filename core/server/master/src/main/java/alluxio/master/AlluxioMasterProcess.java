@@ -72,7 +72,7 @@ public class AlluxioMasterProcess extends MasterProcess {
   private final MasterRegistry mRegistry;
 
   /** The JVMMonitor Progress. */
-  protected JvmPauseMonitor mJvmPauseMonitor;
+  private JvmPauseMonitor mJvmPauseMonitor;
 
   /** The connect address for the rpc server. */
   final InetSocketAddress mRpcConnectAddress;
@@ -170,12 +170,16 @@ public class AlluxioMasterProcess extends MasterProcess {
       stopServing();
     }
     stopServingWebServer();
-    if (mJvmPauseMonitor != null) {
-      mJvmPauseMonitor.stop();
-    }
+    stopJvmPauseMonitor();
     MetricsSystem.stopSinks();
     closeMasters();
     mJournalSystem.stop();
+  }
+
+  protected void stopJvmPauseMonitor() {
+    if (mJvmPauseMonitor != null) {
+      mJvmPauseMonitor.stop();
+    }
   }
 
   private void initFromBackup(AlluxioURI backup) throws IOException {

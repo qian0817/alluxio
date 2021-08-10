@@ -201,11 +201,6 @@ final class FaultTolerantAlluxioMasterProcess extends AlluxioMasterProcess {
     if (mLeaderSelector != null) {
       mLeaderSelector.stop();
     }
-    stopServingWebServer();
-    if (mJvmPauseMonitor != null) {
-      mJvmPauseMonitor.stop();
-    }
-    MetricsSystem.stopSinks();
   }
 
   @Override
