@@ -13,6 +13,7 @@ package alluxio.master;
 
 import alluxio.Constants;
 import alluxio.ProcessUtils;
+import alluxio.RuntimeConstants;
 import alluxio.conf.PropertyKey;
 import alluxio.conf.ServerConfiguration;
 import alluxio.master.PrimarySelector.State;
@@ -90,6 +91,12 @@ final class FaultTolerantAlluxioMasterProcess extends AlluxioMasterProcess {
       throw new RuntimeException(e);
     }
 
+    MetricsSystem.startSinks(ServerConfiguration.get(PropertyKey.METRICS_CONF_FILE));
+    startServingRPCServer();
+    LOG.info("Alluxio master web server version {} starting. webAddress={}",
+            RuntimeConstants.VERSION, mWebBindAddress);
+    startServingWebServer();
+    startJvmMonitorProcess();
     while (!Thread.interrupted()) {
       if (!mRunning) {
         break;
@@ -194,6 +201,16 @@ final class FaultTolerantAlluxioMasterProcess extends AlluxioMasterProcess {
     if (mLeaderSelector != null) {
       mLeaderSelector.stop();
     }
+    stopServingWebServer();
+    if (mJvmPauseMonitor != null) {
+      mJvmPauseMonitor.stop();
+    }
+    MetricsSystem.stopSinks();
+  }
+
+  @Override
+  public PrimarySelector getPrimarySelector() {
+    return mLeaderSelector;
   }
 
   /**

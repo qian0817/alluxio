@@ -139,6 +139,7 @@ public class AlluxioJobMasterProcess extends MasterProcess {
     mJournalSystem.gainPrimacy();
     startMaster(true);
     startServing();
+    startServingWebServer();
   }
 
   /**
@@ -152,6 +153,7 @@ public class AlluxioJobMasterProcess extends MasterProcess {
     if (isServing()) {
       stopServing();
     }
+    stopWebServer();
     stopMaster();
     mJournalSystem.stop();
   }
@@ -178,9 +180,6 @@ public class AlluxioJobMasterProcess extends MasterProcess {
   }
 
   protected void startServing(String startMessage, String stopMessage) {
-    LOG.info("Alluxio job master web server version {} starting{}. webAddress={}",
-        RuntimeConstants.VERSION, startMessage, mWebBindAddress);
-    startServingWebServer();
     LOG.info(
         "Alluxio job master version {} started{}. bindAddress={}, connectAddress={}, webAddress={}",
         RuntimeConstants.VERSION, startMessage, mRpcBindAddress, mRpcConnectAddress,
@@ -191,7 +190,8 @@ public class AlluxioJobMasterProcess extends MasterProcess {
   }
 
   protected void startServingWebServer() {
-    stopRejectingWebServer();
+    LOG.info("Alluxio job master web server version {} starting. webAddress={}",
+            RuntimeConstants.VERSION, mWebBindAddress);
     mWebServer =
         new JobMasterWebServer(ServiceType.JOB_MASTER_WEB.getServiceName(), mWebBindAddress, this);
     mWebServer.addHandler(mMetricsServlet.getHandler());
@@ -204,7 +204,7 @@ public class AlluxioJobMasterProcess extends MasterProcess {
    */
   protected void startServingRPCServer() {
     try {
-      stopRejectingRpcServer();
+      stopRejectingServers();
       LOG.info("Starting Alluxio job master gRPC server on address {}", mRpcBindAddress);
       GrpcServerBuilder serverBuilder = GrpcServerBuilder.forAddress(
           GrpcServerAddress.create(mRpcConnectAddress.getHostName(), mRpcBindAddress),
@@ -233,6 +233,13 @@ public class AlluxioJobMasterProcess extends MasterProcess {
         LOG.warn("Alluxio job master RPC server shutdown timed out.");
       }
     }
+    if (mWebServer != null) {
+      mWebServer.stop();
+      mWebServer = null;
+    }
+  }
+
+  private void stopWebServer() throws Exception {
     if (mWebServer != null) {
       mWebServer.stop();
       mWebServer = null;
