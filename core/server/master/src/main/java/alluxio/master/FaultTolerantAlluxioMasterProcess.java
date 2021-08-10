@@ -94,7 +94,7 @@ final class FaultTolerantAlluxioMasterProcess extends AlluxioMasterProcess {
     MetricsSystem.startSinks(ServerConfiguration.get(PropertyKey.METRICS_CONF_FILE));
     startServingRPCServer();
     LOG.info("Alluxio master web server version {} starting. webAddress={}",
-            RuntimeConstants.VERSION, mWebBindAddress);
+        RuntimeConstants.VERSION, mWebBindAddress);
     startServingWebServer();
     startJvmMonitorProcess();
     while (!Thread.interrupted()) {

@@ -176,12 +176,6 @@ public class AlluxioMasterProcess extends MasterProcess {
     mJournalSystem.stop();
   }
 
-  protected void stopJvmPauseMonitor() {
-    if (mJvmPauseMonitor != null) {
-      mJvmPauseMonitor.stop();
-    }
-  }
-
   private void initFromBackup(AlluxioURI backup) throws IOException {
     CloseableResource<UnderFileSystem> ufsResource;
     if (URIUtils.isLocalFilesystem(backup.toString())) {
@@ -289,6 +283,12 @@ public class AlluxioMasterProcess extends MasterProcess {
           ServerConfiguration.getMs(PropertyKey.JVM_MONITOR_WARN_THRESHOLD_MS),
           ServerConfiguration.getMs(PropertyKey.JVM_MONITOR_INFO_THRESHOLD_MS));
       mJvmPauseMonitor.start();
+    }
+  }
+
+  protected void stopJvmPauseMonitor() {
+    if (mJvmPauseMonitor != null) {
+      mJvmPauseMonitor.stop();
     }
   }
 
